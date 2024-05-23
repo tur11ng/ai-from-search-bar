@@ -66,40 +66,6 @@ function waitForElementStable(
   });
 }
 
-// Listen for messages from the background script.
-chrome.runtime.onMessage.addListener(
-  (
-    request: any,
-    _sender: chrome.runtime.MessageSender,
-    sendResponse: (response: any) => void
-  ) => {
-    if (request.type === "PROMPT") {
-      console.log("Prompt request received:", request.value);
-      pushPrompt(request.value, sendResponse);
-
-      waitForElementStable("textarea", (textarea) => {
-        let form = textarea.closest("form");
-        if (!form) {
-          console.error("No form found for textarea");
-          return;
-        }
-
-        const prompt = popPrompt();
-        if (!prompt) {
-          console.error("No prompt found");
-          return;
-        }
-
-        console.log("Form found, submit prompt:", prompt);
-        dispatchText(textarea as HTMLTextAreaElement, prompt);
-        dispatchSubmit(form);
-      });
-    }
-
-    return true;
-  }
-);
-
 // DOM and React helper functions.
 function dispatchText(element: HTMLTextAreaElement, value: string): void {
   // Set the input value
@@ -116,6 +82,40 @@ function dispatchSubmit(form: HTMLFormElement): void {
   const event = new Event("submit", { bubbles: true, cancelable: true });
   form.dispatchEvent(event);
 }
+
+// Listen for messages from the background script.
+chrome.runtime.onMessage.addListener(
+    (
+        request: any,
+        _sender: chrome.runtime.MessageSender,
+        sendResponse: (response: any) => void
+    ) => {
+      if (request.type === "PROMPT") {
+        console.log("Prompt request received:", request.value);
+        pushPrompt(request.value, sendResponse);
+
+        waitForElementStable("textarea", (textarea) => {
+          let form = textarea.closest("form");
+          if (!form) {
+            console.error("No form found for textarea");
+            return;
+          }
+
+          const prompt = popPrompt();
+          if (!prompt) {
+            console.error("No prompt found");
+            return;
+          }
+
+          console.log("Form found, submit prompt:", prompt);
+          dispatchText(textarea as HTMLTextAreaElement, prompt);
+          dispatchSubmit(form);
+        });
+      }
+
+      return true;
+    }
+);
 
 // Wait for the page load, for an element to appear, and another moment to make sure the page is fully loaded.
 window.addEventListener("load", () => {

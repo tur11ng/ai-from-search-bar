@@ -5,26 +5,26 @@ const MODELS = {
 };
 
 chrome.omnibox.onInputEntered.addListener(
-  (userInput: string, disposition: string) => {
-    // Split user input to get keyword and sub-command
-    let parts = userInput.split(" ");
-    let subCommand = parts[0]?.toLowerCase();
-    let searchText: string[];
+    (userInput, disposition) => {
+      // Split user input to get keyword and sub-command
+      const parts = userInput.split(" ");
+      const subCommand = parts[0]?.toLowerCase();
+      let searchText: string[];
 
-    switch (subCommand) {
-      case "g": // Gemini
-        searchText = parts.slice(1);
-        customSearch(MODELS.GPT, searchText);
-        break;
-      case "m": // Mistral
-        searchText = parts.slice(1);
-        customSearch(MODELS.MISTRAL, searchText);
-        break;
-      default: // ChatGPT
-        searchText = parts.slice(1);
-        customSearch(MODELS.GPT, searchText);
+      switch (subCommand) {
+        case "g": // Gemini
+          searchText = parts.slice(1);
+          customSearch(MODELS.GPT, searchText);
+          break;
+        case "m": // Mistral
+          searchText = parts.slice(1);
+          customSearch(MODELS.MISTRAL, searchText);
+          break;
+        default: // ChatGPT
+          searchText = parts.slice(0);
+          customSearch(MODELS.GPT, searchText);
+      }
     }
-  }
 );
 
 function customSearch(model: string, query: string[]) {
@@ -36,13 +36,13 @@ function customSearch(model: string, query: string[]) {
 }
 
 function findOrCreateTab(
-  model: string,
-  callback: (tab: chrome.tabs.Tab) => void
+    model: string,
+    callback: (tab: chrome.tabs.Tab) => void
 ) {
   chrome.tabs.query({ url: model + "/*" }, (tabs) => {
     console.log("Found tabs:", tabs);
     if (tabs.length > 0) {
-      tabs.sort((a, b) => b.id! - a.id!);
+      tabs.sort((a, b) => (b.id! - a.id!));
       const targetTab = tabs[0];
       callback(targetTab);
       chrome.tabs.update(targetTab.id!, { active: true });
@@ -62,14 +62,14 @@ function findOrCreateTab(
 
 function sendPromptToTab(tabId: number, prompt: string) {
   chrome.tabs.sendMessage(
-    tabId,
-    { type: "PROMPT", value: prompt },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error(chrome.runtime.lastError.message);
-      } else {
-        console.log("Prompt response:", response);
+      tabId,
+      { type: "PROMPT", value: prompt },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+        } else {
+          console.log("Prompt response:", response);
+        }
       }
-    }
   );
 }
