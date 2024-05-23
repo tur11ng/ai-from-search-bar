@@ -1,15 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "Ask ChatGPT",
-  "version": "1.2",
-  "description": "Ask ChatGPT from the address bar (omnibox)",
+  "name": "AI from",
+  "version": "0.1",
+  "description": "Talk to AI (ChatGPT/Gemini/Mistral) directly from the search bar (omnibox).",
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": [
-        "https://chat.openai.com/*"
+        "https://chat.openai.com/*",
+        "https://gemini.google.com/*",
+        "https://chat.mistral.ai/*"
       ],
       "js": [
         "content.js"
